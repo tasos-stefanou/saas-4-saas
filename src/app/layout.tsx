@@ -17,7 +17,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider appearance={{ baseTheme: dark }}>
+    <ClerkProvider
+      appearance={{ baseTheme: dark }}
+      signInForceRedirectUrl={'/site'}
+      signUpForceRedirectUrl={'/site'}
+    >
       <html lang='en'>
         <body className={inter.className}>{children}</body>
       </html>
