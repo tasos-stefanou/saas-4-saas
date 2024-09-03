@@ -1,7 +1,7 @@
 import React from 'react';
 
-const page = () => {
-  return <div>page</div>;
+const PathPage = () => {
+  return <div>PathPage</div>;
 };
 
-export default page;
+export default PathPage;
