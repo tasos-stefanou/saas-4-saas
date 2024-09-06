@@ -80,7 +80,8 @@ model Permissions {
 model Agency {
   id               String                @id @default(uuid())
   connectAccountId String?               @default("")
-  customerId       String                @default("")
+  // WIP: change that later to be required
+  customerId       String?               @default("")
   name             String
   agencyLogo       String                @db.Text
   companyEmail     String                @db.Text

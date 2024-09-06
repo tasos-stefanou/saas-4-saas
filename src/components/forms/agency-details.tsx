@@ -36,45 +36,33 @@ import {
 } from '../ui/form';
 import { useToast } from '../ui/use-toast';
 
-import * as z from 'zod';
-// import FileUpload from '../global/file-upload'
 import { Input } from '../ui/input';
 import { Switch } from '../ui/switch';
 import {
-  //   deleteAgency,
-  //   initUser,
+  deleteAgency,
+  initUser,
   saveActivityLogsNotification,
-  //   updateAgencyDetails,
-  //   upsertAgency,
+  updateAgencyDetails,
+  upsertAgency,
 } from '@/lib/queries';
 import { Button } from '../ui/button';
 import FileUpload from '../global/file-upload';
-// import Loading from '../global/loading'
+import Loading from '../global/loading';
+import { AgencyDetailsFormSchema, AgencyDetailsFormType } from '@/lib/types';
+import { createStripeCustomer } from '@/lib/actions';
+import { constructStripeCustomerData } from '@/lib/helper';
 
-type Props = {
+type AgencyDetailsProps = {
   data?: Partial<Agency>;
 };
 
-const AgencyDetailsFormSchema = z.object({
-  name: z.string().min(2, { message: 'Agency name must be atleast 2 chars.' }),
-  companyEmail: z.string().email(),
-  companyPhone: z.string().min(1),
-  whiteLabel: z.boolean(),
-  address: z.string().min(1),
-  city: z.string().min(1),
-  zipCode: z.string().min(1),
-  state: z.string().min(1),
-  country: z.string().min(1),
-  agencyLogo: z.string().min(1),
-});
-
-const AgencyDetails = ({ data }: Props) => {
+const AgencyDetails = ({ data }: AgencyDetailsProps) => {
   const { toast } = useToast();
   const router = useRouter();
 
   const [deletingAgency, setDeletingAgency] = useState(false);
 
-  const form = useForm<z.infer<typeof AgencyDetailsFormSchema>>({
+  const form = useForm<AgencyDetailsFormType>({
     mode: 'onChange',
     resolver: zodResolver(AgencyDetailsFormSchema),
     defaultValues: {
@@ -99,111 +87,89 @@ const AgencyDetails = ({ data }: Props) => {
     }
   }, [data]);
 
-  //   const handleSubmit = async (values: z.infer<typeof AgencyDetailsFormSchema>) => {
-  //     try {
-  //       let newUserData
-  //       let custId
-  //       if (!data?.id) {
-  //         const bodyData = {
-  //           email: values.companyEmail,
-  //           name: values.name,
-  //           shipping: {
-  //             address: {
-  //               city: values.city,
-  //               country: values.country,
-  //               line1: values.address,
-  //               postal_code: values.zipCode,
-  //               state: values.zipCode,
-  //             },
-  //             name: values.name,
-  //           },
-  //           address: {
-  //             city: values.city,
-  //             country: values.country,
-  //             line1: values.address,
-  //             postal_code: values.zipCode,
-  //             state: values.zipCode,
-  //           },
-  //         }
+  const handleSubmit = async (values: AgencyDetailsFormType) => {
+    try {
+      let newUserData;
+      let customerId;
+      if (!data?.id) {
+        const bodyData = constructStripeCustomerData(values);
 
-  //         const customerResponse = await fetch('/api/stripe/create-customer', {
-  //           method: 'POST',
-  //           headers: {
-  //             'Content-Type': 'application/json',
-  //           },
-  //           body: JSON.stringify(bodyData),
-  //         })
-  //         const customerData: { customerId: string } =
-  //           await customerResponse.json()
-  //         custId = customerData.customerId
-  //       }
+        // WIP: hanle error
+        const [customerResponse, createStripeCustomerError] =
+          await createStripeCustomer(bodyData);
 
-  //       newUserData = await initUser({ role: 'AGENCY_OWNER' })
-  //       if (!data?.customerId && !custId) return
+        const customerData: { customerId: string } = customerResponse;
+        customerId = customerData.customerId;
+      }
 
-  //       const response = await upsertAgency({
-  //         id: data?.id ? data.id : v4(),
-  //         customerId: data?.customerId || custId || '',
-  //         address: values.address,
-  //         agencyLogo: values.agencyLogo,
-  //         city: values.city,
-  //         companyPhone: values.companyPhone,
-  //         country: values.country,
-  //         name: values.name,
-  //         state: values.state,
-  //         whiteLabel: values.whiteLabel,
-  //         zipCode: values.zipCode,
-  //         createdAt: new Date(),
-  //         updatedAt: new Date(),
-  //         companyEmail: values.companyEmail,
-  //         connectAccountId: '',
-  //         goal: 5,
-  //       })
-  //       toast({
-  //         title: 'Created Agency',
-  //       })
-  //       if (data?.id) return router.refresh()
-  //       if (response) {
-  //         return router.refresh()
-  //       }
-  //     } catch (error) {
-  //       console.log(error)
-  //       toast({
-  //         variant: 'destructive',
-  //         title: 'Oppse!',
-  //         description: 'could not create your agency',
-  //       })
-  //     }
-  //   }
-  //   const handleDeleteAgency = async () => {
-  //     if (!data?.id) return
-  //     setDeletingAgency(true)
-  //     //WIP: discontinue the subscription
-  //     try {
-  //       const response = await deleteAgency(data.id)
-  //       toast({
-  //         title: 'Deleted Agency',
-  //         description: 'Deleted your agency and all subaccounts',
-  //       })
-  //       router.refresh()
-  //     } catch (error) {
-  //       console.log(error)
-  //       toast({
-  //         variant: 'destructive',
-  //         title: 'Oppse!',
-  //         description: 'could not delete your agency ',
-  //       })
-  //     }
-  //     setDeletingAgency(false)
-  //   }
+      newUserData = await initUser({ role: 'AGENCY_OWNER' });
+      // if (!data?.customerId && !customerId) return;
+      // WIP: revert back to the above line when stripe setup is done
+      if (!data?.id) return;
 
-  const handleSubmit = async (
-    values: z.infer<typeof AgencyDetailsFormSchema>
-  ) => {
-    console.log(values);
+      const response = await upsertAgency({
+        id: data?.id ?? v4(),
+        customerId: data?.customerId || customerId || '',
+        address: values.address,
+        agencyLogo: values.agencyLogo,
+        city: values.city,
+        companyPhone: values.companyPhone,
+        country: values.country,
+        name: values.name,
+        state: values.state,
+        whiteLabel: values.whiteLabel,
+        zipCode: values.zipCode,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        companyEmail: values.companyEmail,
+        connectAccountId: '',
+        goal: 5,
+      });
+      toast({
+        title: 'Created Agency',
+      });
+      // TODO: check if this works correctly
+      if (data?.id || response) return router.refresh();
+    } catch (error) {
+      console.log(error);
+      toast({
+        variant: 'destructive',
+        title: 'Oppse!',
+        description: 'could not create your agency',
+      });
+    }
   };
   const handleDeleteAgency = async () => {
-    console.log('delete agency');
+    if (!data?.id) return;
+    setDeletingAgency(true);
+    //TODO: discontinue the subscription
+    try {
+      await deleteAgency(data.id);
+      toast({
+        title: 'Deleted Agency',
+        description: 'Deleted your agency and all subaccounts',
+      });
+      router.refresh();
+    } catch (error) {
+      console.log(error);
+      toast({
+        variant: 'destructive',
+        title: 'Oppse!',
+        description: 'could not delete your agency ',
+      });
+    }
+    setDeletingAgency(false);
+  };
+
+  const handleValueChange = async (val: number) => {
+    if (!data?.id) return;
+    await updateAgencyDetails(data.id, { goal: val });
+    await saveActivityLogsNotification({
+      agencyId: data.id,
+      description: `Updated the agency goal to | ${val} Sub Account`,
+      subaccountId: undefined,
+    });
+    router.refresh();
   };
 
   return (
@@ -398,16 +364,7 @@ const AgencyDetails = ({ data }: Props) => {
                   </FormDescription>
                   <NumberInput
                     defaultValue={data?.goal}
-                    onValueChange={async (val) => {
-                      if (!data?.id) return;
-                      //   await updateAgencyDetails(data.id, { goal: val })
-                      await saveActivityLogsNotification({
-                        agencyId: data.id,
-                        description: `Updated the agency goal to | ${val} Sub Account`,
-                        subaccountId: undefined,
-                      });
-                      router.refresh();
-                    }}
+                    onValueChange={handleValueChange}
                     min={1}
                     className='bg-background !border !border-input'
                     placeholder='Sub Account Goal'
@@ -415,7 +372,7 @@ const AgencyDetails = ({ data }: Props) => {
                 </div>
               )}
               <Button type='submit' disabled={isLoading}>
-                {/* {isLoading ? <Loading /> : 'Save Agency Information'} */}
+                {isLoading ? <Loading /> : 'Save Agency Information'}
               </Button>
             </form>
           </Form>

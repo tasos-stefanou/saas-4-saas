@@ -4,7 +4,7 @@ import { currentUser } from '@clerk/nextjs/server';
 import { Plan } from '@prisma/client';
 import { redirect } from 'next/navigation';
 
-interface AgencyPageProps {
+interface AgencyCreationPageProps {
   searchParams: {
     plan: Plan;
     state: string;
@@ -12,7 +12,9 @@ interface AgencyPageProps {
   };
 }
 
-const AgencyPage = async ({ searchParams }: AgencyPageProps) => {
+const AgencyCreationPage = async ({
+  searchParams,
+}: AgencyCreationPageProps) => {
   const authUser = await currentUser();
   const agencyId = await verifyAndAcceptInvitation();
 
@@ -55,4 +57,4 @@ const AgencyPage = async ({ searchParams }: AgencyPageProps) => {
   );
 };
 
-export default AgencyPage;
+export default AgencyCreationPage;
