@@ -1,3 +1,4 @@
+import { Role } from '@prisma/client';
 import * as z from 'zod';
 
 export const AgencyDetailsFormSchema = z.object({
@@ -14,3 +15,34 @@ export const AgencyDetailsFormSchema = z.object({
 });
 
 export type AgencyDetailsFormType = z.infer<typeof AgencyDetailsFormSchema>;
+
+export const SubAccountDetailsFormSchema = z.object({
+  name: z.string(),
+  companyEmail: z.string(),
+  companyPhone: z.string().min(1),
+  address: z.string(),
+  city: z.string(),
+  subAccountLogo: z.string(),
+  zipCode: z.string(),
+  state: z.string(),
+  country: z.string(),
+});
+
+export type SubAccountDetailsFormType = z.infer<
+  typeof SubAccountDetailsFormSchema
+>;
+
+export type NotificationWithUser =
+  | ({
+      User: {
+        id: string;
+        name: string;
+        avatarUrl: string;
+        email: string;
+        createdAt: Date;
+        updatedAt: Date;
+        role: Role;
+        agencyId: string | null;
+      };
+    } & Notification)[]
+  | undefined;
