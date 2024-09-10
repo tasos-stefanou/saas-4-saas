@@ -1,4 +1,4 @@
-import { Role } from '@prisma/client';
+import { Notification, Role } from '@prisma/client';
 import * as z from 'zod';
 
 export const AgencyDetailsFormSchema = z.object({
