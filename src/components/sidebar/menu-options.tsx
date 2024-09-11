@@ -101,9 +101,9 @@ const MenuOptions = ({
               >
                 <div className='flex items-center text-left gap-2'>
                   <Compass />
-                  <div className='flex flex-col'>
+                  <div className='flex flex-col text-wrap line-clamp-1'>
                     {details.name}
-                    <span className='text-muted-foreground'>
+                    <span className='text-muted-foreground line-clamp-1'>
                       {details.address}
                     </span>
                   </div>

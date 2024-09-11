@@ -1,5 +1,7 @@
 import { Notification, Role } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import * as z from 'zod';
+import { getAuthUserDetails, getUserPermissions } from './queries';
 
 export const AgencyDetailsFormSchema = z.object({
   name: z.string().min(2, { message: 'Agency name must be atleast 2 chars.' }),
@@ -46,3 +48,10 @@ export type NotificationWithUser =
       };
     } & Notification)[]
   | undefined;
+
+export type AuthUserWithAgencySigebarOptionsSubAccounts =
+  Prisma.PromiseReturnType<typeof getAuthUserDetails>;
+
+export type UserWithPermissionsAndSubAccounts = Prisma.PromiseReturnType<
+  typeof getUserPermissions
+>;

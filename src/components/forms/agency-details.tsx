@@ -105,7 +105,7 @@ const AgencyDetails = ({ data }: AgencyDetailsProps) => {
       newUserData = await initUser({ role: 'AGENCY_OWNER' });
       // if (!data?.customerId && !customerId) return;
       // WIP: revert back to the above line when stripe setup is done
-      if (!data?.id) return;
+      //   if (!data?.id) return;
 
       const response = await upsertAgency({
         id: data?.id ?? v4(),
