@@ -43,7 +43,6 @@ const InfoBar = ({ notifications, subAccountId, className, role }: Props) => {
     setShowAll((prev) => !prev);
   };
 
-  console.log(allNotifications);
   return (
     <>
       <div
