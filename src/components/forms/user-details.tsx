@@ -17,7 +17,6 @@ import {
   saveActivityLogsNotification,
   updateUser,
 } from '@/lib/queries';
-import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -71,16 +70,6 @@ const UserDetails = ({ id, type, subAccounts, userData }: UserDetailsProps) => {
   const { toast } = useToast();
   const router = useRouter();
 
-  useEffect(() => {
-    if (data.user) {
-      const fetchDetails = async () => {
-        const response = await getAuthUserDetails();
-        if (response) setAuthUserData(response);
-      };
-      fetchDetails();
-    }
-  }, [data]);
-
   const form = useForm<UserDataFormType>({
     resolver: zodResolver(userDataFormSchema),
     mode: 'onChange',
@@ -91,6 +80,16 @@ const UserDetails = ({ id, type, subAccounts, userData }: UserDetailsProps) => {
       role: userData ? userData.role : data?.user?.role,
     },
   });
+
+  useEffect(() => {
+    if (data.user) {
+      const fetchDetails = async () => {
+        const response = await getAuthUserDetails();
+        if (response) setAuthUserData(response);
+      };
+      fetchDetails();
+    }
+  }, [data]);
 
   useEffect(() => {
     if (!data.user) return;
@@ -164,37 +163,52 @@ const UserDetails = ({ id, type, subAccounts, userData }: UserDetailsProps) => {
 
   const onSubmit = async (values: UserDataFormType) => {
     if (!id) return;
-    if (userData || data?.user) {
-      const updatedUser = await updateUser(values);
-      authUserData?.Agency?.SubAccount.filter((subacc) =>
+    if (!userData && !data?.user) {
+      handleUnsuccessFullUpdate();
+      console.log('Error could not submit beacuse of missing user data');
+      return;
+    }
+
+    const updatedUser = await updateUser(values);
+    await createActivityLogNotificattionForSubAccounts(authUserData);
+    !!updatedUser ? handleSuccessFullUpdate() : handleUnsuccessFullUpdate();
+  };
+
+  const createActivityLogNotificattionForSubAccounts = async (
+    authUserData: AuthUserWithAgencySigebarOptionsSubAccounts
+  ) => {
+    let accessibleSubAccounts = authUserData?.Agency?.SubAccount.filter(
+      (subacc) =>
         authUserData.Permissions.find(
           (p) => p.subAccountId === subacc.id && p.access
         )
-      ).forEach(async (subaccount) => {
-        await saveActivityLogsNotification({
-          agencyId: undefined,
-          description: `Updated ${userData?.name} information`,
-          subaccountId: subaccount.id,
-        });
-      });
+    );
+    if (accessibleSubAccounts?.length === 0) return;
 
-      if (updatedUser) {
-        toast({
-          title: 'Success',
-          description: 'Update User Information',
-        });
-        setClose();
-        router.refresh();
-      } else {
-        toast({
-          variant: 'destructive',
-          title: 'Oppse!',
-          description: 'Could not update user information',
-        });
-      }
-    } else {
-      console.log('Error could not submit');
-    }
+    accessibleSubAccounts?.forEach(async (subaccount) => {
+      await saveActivityLogsNotification({
+        agencyId: undefined,
+        description: `Updated ${userData?.name} information`,
+        subaccountId: subaccount.id,
+      });
+    });
+  };
+
+  const handleSuccessFullUpdate = () => {
+    toast({
+      title: 'Success',
+      description: 'Update User Information',
+    });
+    setClose();
+    router.refresh();
+  };
+
+  const handleUnsuccessFullUpdate = () => {
+    toast({
+      variant: 'destructive',
+      title: 'Oppse!',
+      description: 'Could not update user information',
+    });
   };
 
   return (
@@ -315,6 +329,7 @@ const UserDetails = ({ id, type, subAccounts, userData }: UserDetailsProps) => {
             <Button disabled={form.formState.isSubmitting} type='submit'>
               {form.formState.isSubmitting ? <Loading /> : 'Save User Details'}
             </Button>
+            {/* WIP: this does not seem to work correctly */}
             {authUserData?.role === 'AGENCY_OWNER' && (
               <div>
                 <Separator className='my-4' />
