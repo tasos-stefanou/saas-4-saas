@@ -1,6 +1,8 @@
 'use client';
 import {
   AuthUserWithAgencySigebarOptionsSubAccounts,
+  userDataFormSchema,
+  UserDataFormType,
   UserWithPermissionsAndSubAccounts,
 } from '@/lib/types';
 import { useModal } from '@/providers/modal-provider';
@@ -69,8 +71,6 @@ const UserDetails = ({ id, type, subAccounts, userData }: UserDetailsProps) => {
   const { toast } = useToast();
   const router = useRouter();
 
-  //Get authUSerDtails
-
   useEffect(() => {
     if (data.user) {
       const fetchDetails = async () => {
@@ -81,20 +81,8 @@ const UserDetails = ({ id, type, subAccounts, userData }: UserDetailsProps) => {
     }
   }, [data]);
 
-  const userDataSchema = z.object({
-    name: z.string().min(1),
-    email: z.string().email(),
-    avatarUrl: z.string(),
-    role: z.enum([
-      'AGENCY_OWNER',
-      'AGENCY_ADMIN',
-      'SUBACCOUNT_USER',
-      'SUBACCOUNT_GUEST',
-    ]),
-  });
-
-  const form = useForm<z.infer<typeof userDataSchema>>({
-    resolver: zodResolver(userDataSchema),
+  const form = useForm<UserDataFormType>({
+    resolver: zodResolver(userDataFormSchema),
     mode: 'onChange',
     defaultValues: {
       name: userData ? userData.name : data?.user?.name,
@@ -174,7 +162,7 @@ const UserDetails = ({ id, type, subAccounts, userData }: UserDetailsProps) => {
     setLoadingPermissions(false);
   };
 
-  const onSubmit = async (values: z.infer<typeof userDataSchema>) => {
+  const onSubmit = async (values: UserDataFormType) => {
     if (!id) return;
     if (userData || data?.user) {
       const updatedUser = await updateUser(values);
