@@ -48,7 +48,7 @@ import {
 import { Button } from '../ui/button';
 import FileUpload from '../global/file-upload';
 import Loading from '../global/loading';
-import { AgencyDetailsFormSchema, AgencyDetailsFormType } from '@/lib/types';
+import { AgencyDetailsFormSchema, AgencyDetailsFormType } from '@/lib/schemas';
 import { createStripeCustomer } from '@/lib/actions';
 import { constructStripeCustomerData } from '@/lib/helper';
 

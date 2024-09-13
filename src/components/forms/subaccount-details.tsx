@@ -2,7 +2,6 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import * as z from 'zod';
 import { v4 } from 'uuid';
 
 import { Button } from '@/components/ui/button';
@@ -35,7 +34,7 @@ import { useModal } from '@/providers/modal-provider';
 import {
   SubAccountDetailsFormSchema,
   SubAccountDetailsFormType,
-} from '@/lib/types';
+} from '@/lib/schemas';
 
 //TODO: Give access for Subaccount Guest they should see a different view maybe a form that allows them to create tickets
 

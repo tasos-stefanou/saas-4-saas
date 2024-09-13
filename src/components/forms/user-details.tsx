@@ -1,10 +1,9 @@
 'use client';
 import {
   AuthUserWithAgencySigebarOptionsSubAccounts,
-  userDataFormSchema,
-  UserDataFormType,
   UserWithPermissionsAndSubAccounts,
 } from '@/lib/types';
+import { UserDataFormSchema, UserDataFormType } from '@/lib/schemas';
 import { useModal } from '@/providers/modal-provider';
 import { SubAccount, User } from '@prisma/client';
 import React, { useEffect, useState } from 'react';
@@ -71,7 +70,7 @@ const UserDetails = ({ id, type, subAccounts, userData }: UserDetailsProps) => {
   const router = useRouter();
 
   const form = useForm<UserDataFormType>({
-    resolver: zodResolver(userDataFormSchema),
+    resolver: zodResolver(UserDataFormSchema),
     mode: 'onChange',
     defaultValues: {
       name: userData ? userData.name : data?.user?.name,
