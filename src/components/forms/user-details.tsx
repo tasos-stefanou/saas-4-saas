@@ -80,6 +80,12 @@ const UserDetails = ({ id, type, subAccounts, userData }: UserDetailsProps) => {
     },
   });
 
+  const getPermissions = async () => {
+    if (!data.user) return;
+    const permission = await getUserPermissions(data.user.id);
+    setSubAccountsPermissions(permission);
+  };
+
   useEffect(() => {
     if (data.user) {
       const fetchDetails = async () => {
@@ -92,11 +98,6 @@ const UserDetails = ({ id, type, subAccounts, userData }: UserDetailsProps) => {
 
   useEffect(() => {
     if (!data.user) return;
-    const getPermissions = async () => {
-      if (!data.user) return;
-      const permission = await getUserPermissions(data.user.id);
-      setSubAccountsPermissions(permission);
-    };
     getPermissions();
   }, [data, form]);
 
