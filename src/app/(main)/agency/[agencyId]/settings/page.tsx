@@ -1,6 +1,6 @@
 import AgencyDetails from '@/components/forms/agency-details';
 import UserDetails from '@/components/forms/user-details';
-import { db } from '@/lib/db';
+import { getAgencyDetails, getUserDetailsByEmail } from '@/lib/data-access';
 import { currentUser } from '@clerk/nextjs/server';
 import React from 'react';
 
@@ -12,21 +12,14 @@ const SettingsPage = async ({ params }: Props) => {
   const authUser = await currentUser();
   if (!authUser) return null;
 
-  const userDetails = await db.user.findUnique({
-    where: {
-      email: authUser.emailAddresses[0].emailAddress,
-    },
-  });
+  const [userDetails, getUserDetailsByEmailError] = await getUserDetailsByEmail(
+    authUser.emailAddresses[0].emailAddress
+  );
 
   if (!userDetails) return null;
-  const agencyDetails = await db.agency.findUnique({
-    where: {
-      id: params.agencyId,
-    },
-    include: {
-      SubAccount: true,
-    },
-  });
+  const [agencyDetails, getAgencyDetailsError] = await getAgencyDetails(
+    params.agencyId
+  );
 
   if (!agencyDetails) return null;
 

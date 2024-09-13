@@ -5,7 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { db } from '@/lib/db';
+import { getAgencyDetails } from '@/lib/data-access';
 import { CheckCircleIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -19,9 +19,9 @@ type Props = {
 };
 
 const LaunchPadPage = async ({ params, searchParams }: Props) => {
-  const agencyDetails = await db.agency.findUnique({
-    where: { id: params.agencyId },
-  });
+  const [agencyDetails, agencyDetailsError] = await getAgencyDetails(
+    params.agencyId
+  );
 
   if (!agencyDetails) return;
 
