@@ -1,4 +1,4 @@
-import { Prisma, User } from '@prisma/client';
+import { Prisma, SubAccount, User } from '@prisma/client';
 import { db } from './db';
 
 type GetAgencyDetailsResult = [
@@ -36,6 +36,38 @@ export const getUserDetailsByEmail = async (
     return [userDetails, null];
   } catch (error) {
     console.log('[GET_USER_DETAILS_ERROR]', error);
+    return [null, error];
+  }
+};
+
+export const getSubaccountDetails = async (
+  subaccountId: string
+): Promise<[SubAccount | null, unknown | null]> => {
+  try {
+    const response = await db.subAccount.findUnique({
+      where: {
+        id: subaccountId,
+      },
+    });
+    return [response, null];
+  } catch (error) {
+    console.log('[GET_SUBACCOUNT_DETAILS_ERROR]', error);
+    return [null, error];
+  }
+};
+
+export const deleteSubAccount = async (
+  subaccountId: string
+): Promise<[string | null, unknown | null]> => {
+  try {
+    const response = await db.subAccount.delete({
+      where: {
+        id: subaccountId,
+      },
+    });
+    return ['success', null];
+  } catch (error) {
+    console.log('[DELETE_SUBACCOUNT_ERROR]', error);
     return [null, error];
   }
 };
