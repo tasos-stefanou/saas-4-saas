@@ -3,6 +3,9 @@ import { getAuthUserDetails, verifyAndAcceptInvitation } from '@/lib/queries';
 import { redirect } from 'next/navigation';
 
 type SubAccountMainPageProps = {
+  // these will come from stripe,
+  // state: is subaccount id
+  // code: is stripe code
   searchParams: { state: string; code: string };
 };
 
@@ -22,10 +25,20 @@ const SubAccountMainPage = async ({
     (permission) => permission.access === true
   );
 
-  if (searchParams.state) {
+  const getSearchParamsData = (): {
+    statePath: string;
+    stateSubaccountId: string;
+  } => {
     const statePath = searchParams.state.split('___')[0];
     const stateSubaccountId = searchParams.state.split('___')[1];
+    return { statePath, stateSubaccountId };
+  };
+
+  if (searchParams.state) {
+    const { statePath, stateSubaccountId } = getSearchParamsData();
+
     if (!stateSubaccountId) return <Unauthorized />;
+
     return redirect(
       `/subaccount/${stateSubaccountId}/${statePath}?code=${searchParams.code}`
     );
